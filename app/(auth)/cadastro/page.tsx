@@ -1,13 +1,11 @@
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import Link from 'next/link';
+} from "@/components/ui/card";
+import RegisterForm from "./register-form";
 
 export default async function RegisterPage() {
   return (
@@ -18,27 +16,11 @@ export default async function RegisterPage() {
           <CardDescription>Faça seu cadastro gratuitamente.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div>
-            <Label>Nome</Label>
-            <Input type="text" name="name" placeholder="Fulano de Tal" />
-          </div>
-          <div>
-            <Label>Email</Label>
-            <Input type="email" name="email" placeholder="eu@exemplo.com" />
-          </div>
-          <div>
-            <Label>Senha</Label>
-            <Input type="password" name="password" placeholder="********" />
-          </div>
-          <div>
-            <Button className="w-full mt-6" type="submit">
-              Registrar
-            </Button>
-          </div>
+          <RegisterForm />
         </CardContent>
       </Card>
       <p className="text-sm text-muted-foreground mt-3">
-        Já possui cadastro?{' '}
+        Já possui cadastro?{" "}
         <Link className="text-gray-800 hover:underline" href="/login">
           Faça o login
         </Link>
