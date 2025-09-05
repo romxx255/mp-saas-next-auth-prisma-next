@@ -9,8 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import LoginForm from "./login-form";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export default async function LoginPage() {
+
+  const session = await auth();
+  if (session) {
+    return redirect("/dashboard");
+  }
   return (
     <>
       <Card className="max-w-sm w-full rounded-2xl mt-12">

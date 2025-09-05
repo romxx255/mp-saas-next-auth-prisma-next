@@ -11,7 +11,7 @@ export async function findUserByCredencials(
   email: string,
   password: string
 ): Promise<User | null> {
-  const user = await db.user.findUnique({
+  const user = await db.user.findFirst({
     where: {
       email: email,
     },
