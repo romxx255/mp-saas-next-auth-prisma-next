@@ -24,7 +24,7 @@ export default function RegisterForm() {
   } | null>(null);
 
   async function handleSubmit(formData: FormData) {
-    const result = await registerAction(formData);
+    const result = await registerAction(null, formData);
     setState(result);
   }
   return (
