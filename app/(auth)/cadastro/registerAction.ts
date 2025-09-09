@@ -15,9 +15,6 @@ export default async function registerAction(
 		password: string;
 	};
 
-	console.log('==== Server Action Register User ====');
-	console.log(data);
-
 	// se não tiver email, nome ou senha, retorna erro
 	if (!data.email || !data.name || !data.password) {
 		return {

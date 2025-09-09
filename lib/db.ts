@@ -1,6 +1,8 @@
 // Instância do banco de dados do prisma
 
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { createClient } from "@libsql/client";
 
 declare global {
   // Using `var` so it attaches to `globalThis` in Node
@@ -9,7 +11,18 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-const db = globalThis.prisma ?? new PrismaClient();
+let db: PrismaClient;
+
+if (process.env.TURSO_DATABASE_URL) {
+  const url = process.env.TURSO_DATABASE_URL!;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
+
+  const libsql = createClient({ url, authToken });
+  const adapter = new PrismaLibSQL(libsql);
+  db = globalThis.prisma ?? new PrismaClient({ adapter });
+} else {
+  db = globalThis.prisma ?? new PrismaClient();
+}
 
 if (process.env.NODE_ENV !== "production") {
   globalThis.prisma = db;
