@@ -1,42 +1,34 @@
 // Instância do banco de dados do prisma
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client'
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
+import { createClient } from '@libsql/client'
 
-declare global {
-  // Using `var` so it attaches to `globalThis` in Node
-  // and survives hot-reloads in Next.js during development
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
-}
+// Função para criar o cliente Turso
+function createTursoClient() {
+  const url = process.env.TURSO_DATABASE_URL
+  const authToken = process.env.TURSO_AUTH_TOKEN
 
-let db: PrismaClient;
-
-if (process.env.TURSO_DATABASE_URL) {
-  try {
-    // Dynamic import to avoid bundling issues
-    const { PrismaLibSQL } = require("@prisma/adapter-libsql");
-    const { createClient } = require("@libsql/client");
-
-    const url = process.env.TURSO_DATABASE_URL!;
-    const authToken = process.env.TURSO_AUTH_TOKEN;
-
-    const libsql = createClient({ 
-      url,
-      authToken: authToken || undefined // Make authToken optional
-    });
-    
-    const adapter = new PrismaLibSQL(libsql);
-    db = globalThis.prisma ?? new PrismaClient({ adapter });
-  } catch (error) {
-    console.error("Failed to initialize Turso adapter. Falling back to default Prisma Client.", error);
-    db = globalThis.prisma ?? new PrismaClient();
+  if (!url) {
+    throw new Error('TURSO_DATABASE_URL is not defined')
   }
+
+  return createClient({
+    url,
+    authToken: authToken || undefined,
+  })
+}
+
+// Criar o adapter e cliente Prisma
+let prisma: PrismaClient
+
+if (process.env.NODE_ENV === 'production') {
+  const libsql = createTursoClient()
+  const adapter = new PrismaLibSQL(libsql)
+  prisma = new PrismaClient({ adapter })
 } else {
-  db = globalThis.prisma ?? new PrismaClient();
+  // Para desenvolvimento local, você pode usar SQLite local
+  prisma = new PrismaClient()
 }
 
-if (process.env.NODE_ENV !== "production") {
-  globalThis.prisma = db;
-}
-
-export default db;
+export { prisma }
