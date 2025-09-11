@@ -11,9 +11,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("TURSO_DATABASE_URL")
+  provider = "postgresql"
+  url      = env("POSTGRES_URL_NON_POOLING")
 }
+
 model user {
   id       Int     @id @default(autoincrement())
   name     String?
