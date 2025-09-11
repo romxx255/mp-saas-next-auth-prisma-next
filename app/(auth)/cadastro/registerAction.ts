@@ -5,46 +5,61 @@ import { hashSync } from "bcrypt-ts";
 import { redirect } from 'next/navigation';
 
 export default async function registerAction(
-	_prevState: any,
-	formData: FormData
+  _prevState: { message?: string; success?: boolean } | null,
+  formData: FormData
 ) {
-	const entries = Array.from(formData.entries());
-	const data = Object.fromEntries(entries) as {
-		name: string;
-		email: string;
-		password: string;
-	};
+  try {
+    const entries = Array.from(formData.entries());
+    const data = Object.fromEntries(entries) as {
+      name: string;
+      email: string;
+      password: string;
+    };
 
-	// se não tiver email, nome ou senha, retorna erro
-	if (!data.email || !data.name || !data.password) {
-		return {
-			message: 'Preencha todos os campos',
-			success: false,
-		};
-	}
+    // Validate input
+    if (!data.email || !data.name || !data.password) {
+      return {
+        message: 'Preencha todos os campos',
+        success: false,
+      };
+    }
 
-	// se um usuário já existe.
-	const user = await db.user.findUnique({
-		where: {
-			email: data.email,
-		},
-	});
+    try {
+      // Check if user already exists
+      const existingUser = await db.user.findUnique({
+        where: { email: data.email },
+      });
 
-	if (user) {
+      if (existingUser) {
+        return {
+          message: 'Este e-mail já está em uso',
+          success: false,
+        };
+      }
+
+      // Create new user
+      await db.user.create({
+        data: {
+          email: data.email,
+          name: data.name,
+          password: hashSync(data.password, 10),
+        },
+      });
+      
+      return redirect('/dashboard');
+      
+    } catch (dbError) {
+      console.error('Database error during registration:', dbError);
+      return {
+        message: 'Erro ao processar o cadastro. Por favor, tente novamente.',
+        success: false,
+      };
+    }
+  } catch (error) {
+    console.error('Unexpected error in registerAction:', error);
     return {
-      message: 'Este usuário já existe',
+      message: 'Ocorreu um erro inesperado. Por favor, tente novamente.',
       success: false,
     };
   }
-
-	// se não existir, cria o usuário
-	await db.user.create({
-		data: {
-			email: data.email,
-			name: data.name,
-			password: hashSync(data.password),
-		},
-	});
-	
-	return redirect('/dashboard');
 }
